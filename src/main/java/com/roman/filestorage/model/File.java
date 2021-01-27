@@ -5,6 +5,11 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.Arrays;
+import java.util.UUID;
+
+import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
+
 @Document(indexName = "file_index")
 public class File {
     @Id
@@ -16,10 +21,14 @@ public class File {
     @Field(type = FieldType.Integer, name = "size")
     int size;
 
+    @Field(type = Keyword)
+    private String[] tags;
+
     public File() {
     }
 
     public File(String name, int size) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.size = size;
     }
@@ -46,5 +55,23 @@ public class File {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public String[] getTags() {
+        return tags;
+    }
+
+    public void setTags(String[] tags) {
+        this.tags = tags;
+    }
+
+    @Override
+    public String toString() {
+        return "File{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", size=" + size +
+                ", tags=" + Arrays.toString(tags) +
+                '}';
     }
 }

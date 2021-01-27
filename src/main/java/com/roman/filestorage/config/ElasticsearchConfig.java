@@ -15,7 +15,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 @ComponentScan(basePackages = { "com.roman.filestorage" })
 public class ElasticsearchConfig {
 
-    @Bean
+    @Bean("myClient")
     public RestHighLevelClient client() {
         ClientConfiguration clientConfiguration
                 = ClientConfiguration.builder()

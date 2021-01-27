@@ -6,8 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
-public interface FileRepository extends ElasticsearchRepository<File, String> {
+import java.util.Optional;
 
-    @Query("{\"bool\": {\"must\": [{\"match\": {\"authors.name\": \"?0\"}}]}}")
-    Page<File> findByAuthorsNameUsingCustomQuery(String name, Pageable pageable);
+public interface FileRepository extends ElasticsearchRepository<File, String> {
+    Optional<File> findById(String id);
 }
