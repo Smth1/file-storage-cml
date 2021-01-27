@@ -4,7 +4,7 @@ cd ../../
 
 mvn clean install
 
-rmdir bin
+rm -rf bin
 
 mkdir bin
 

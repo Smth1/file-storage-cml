@@ -51,7 +51,7 @@ and run project
 
 ```
     server.port = 8081
-    elasticsearch.host = localhost:9200
+    spring.elasticsearch.rest.uris= http://localhost:9200
     spring.elasticsearch.rest.username
     spring.elasticsearch.rest.password
 ```
