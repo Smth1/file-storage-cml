@@ -25,7 +25,7 @@ public class FileController {
         this.tagService = tagService;
     }
 
-    @PostMapping()
+    @PostMapping
     @ResponseBody
     public ResponseEntity<Model> uploadFile(@RequestBody UploadRequest uploadRequest) {
         Model model = new ExtendedModelMap();

@@ -3,24 +3,20 @@ package com.roman.filestorage.service;
 import com.roman.filestorage.model.File;
 import com.roman.filestorage.model.dto.PagedFiles;
 import com.roman.filestorage.repository.FileRepository;
+
 import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -44,8 +40,10 @@ public class TagService {
     public ResponseEntity<Model> removeTags(String fileId, String[] tags) {
         Model model = new ExtendedModelMap();
         Optional<File> files = fileRepository.findById(fileId);
+
         if (files.isPresent()) {
             File file = files.get();
+
             if (!containsAllTags(file, tags)) {
                 model.addAttribute("success", false);
                 model.addAttribute("error", "tag not found on file");
