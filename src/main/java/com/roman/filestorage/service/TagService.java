@@ -4,19 +4,12 @@ import com.roman.filestorage.model.File;
 import com.roman.filestorage.model.dto.PagedFiles;
 import com.roman.filestorage.repository.FileRepository;
 
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.TermQueryBuilder;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,11 +18,12 @@ import org.springframework.ui.Model;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TagService {
     private final FileRepository fileRepository;
-    private RestHighLevelClient restHighLevelClient;
+    private final RestHighLevelClient restHighLevelClient;
 
     @Autowired
     public TagService(FileRepository fileRepository, @Qualifier("myClient") RestHighLevelClient restHighLevelClient) {
@@ -94,44 +88,16 @@ public class TagService {
         return new ResponseEntity<>(searchtags, HttpStatus.OK);
     }
 
-    public PagedFiles searchtags(String[] tags, int page, int size) throws IOException {
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-
-        if(tags != null) {
-            for (String tag : tags) {
-                TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("tags", tag);
-                boolQueryBuilder.must(termQueryBuilder);
-            }
-        }
-        SearchRequest searchRequest = new SearchRequest("file_index");
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-
-        searchSourceBuilder.query(boolQueryBuilder);
-        searchRequest.source(searchSourceBuilder);
-
-        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-
-        return parseHits(searchResponse.getHits(), page, size);
-    }
-
-    public PagedFiles parseHits(SearchHits searchHits, int page, int size) {
-        SearchHit[] hits = searchHits.getHits();
-        List<File> files = new ArrayList<>();
+    public PagedFiles searchtags(String[] tags, int page, int size) {
         PagedFiles pagedFiles = new PagedFiles();
+        String str = Arrays.stream(tags).map(el -> "\""+el+"\"")
+                .collect(Collectors.toList()).toString();
 
-        for (int i=page*size; i < (page + 1)*size && i < hits.length; i ++) {
+        Page<Object> tagsResponse = fileRepository.findByTagUsingDeclaredQuery(str, PageRequest.of(page, size));
 
-            Map<String, Object> sourceAsMap = hits[i].getSourceAsMap();
-            File file = new File();
-            file.setId((String) sourceAsMap.get("id"));
-            if (sourceAsMap.get("tags") != null)
-                file.setTags(((ArrayList<String>) sourceAsMap.get("tags")).toArray(new String[0]));
-            file.setSize((Integer) sourceAsMap.get("size"));
-            file.setName((String) sourceAsMap.get("name"));
-            files.add(file);
-        }
-        pagedFiles.setPage(files);
-        pagedFiles.setTotal(hits.length);
+        List<File> filesOnPage = tagsResponse.get().map(el -> (File)el ).collect(Collectors.toList());
+        pagedFiles.setTotal((int)tagsResponse.getTotalElements());
+        pagedFiles.setPage(filesOnPage);
 
         return pagedFiles;
     }

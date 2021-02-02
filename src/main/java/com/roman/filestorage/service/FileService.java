@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class FileService {
@@ -21,7 +24,34 @@ public class FileService {
         this.fileRepository = fileRepository;
     }
 
-    public String uploadFile(UploadRequest uploadRequest) {
+    public ResponseEntity<Model> uploadFile(UploadRequest uploadRequest) {
+        Model model = new ExtendedModelMap();
+
+        if (uploadRequest.getName() != null
+                && uploadRequest.getName().length() > 0
+                && uploadRequest.getSize() >= 0) {
+            String id = saveFile(uploadRequest);
+
+            model.addAttribute("ID", id);
+
+            return new ResponseEntity<>(model, HttpStatus.OK);
+        } else {
+
+            if (uploadRequest.getName() == null || uploadRequest.getName().length() == 0) {
+                model.addAttribute("error", "empty file name");
+            }
+
+            if (uploadRequest.getSize() < 0) {
+                model.addAttribute("error", "the file size must be positive");
+            }
+
+            model.addAttribute("success", "false");
+
+            return new ResponseEntity<>(model, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public String saveFile(UploadRequest uploadRequest) {
         File file = new File(uploadRequest.getName(), uploadRequest.getSize());
         file.setName(uploadRequest.getName());
         file.setSize(uploadRequest.getSize());
@@ -50,20 +80,26 @@ public class FileService {
         }
     }
 
-    public void assignTags(String fileId, String[] tags) {
+    public ResponseEntity<Model> assignTags(String fileId, String[] tags) {
         Optional<File> files = fileRepository.findById(fileId);
+        Set<String> tagSet = new HashSet<>(Arrays.asList(tags));
+        Model model = new ExtendedModelMap();
+
         if (files.isPresent()) {
             File file = files.get();
             String[] tags1 = file.getTags();
             if (tags1 != null) {
-                String[] newTags = new String[tags.length + tags1.length];
-                System.arraycopy(tags1, 0, newTags, 0, tags1.length);
-                System.arraycopy(tags, 0, newTags, tags1.length, tags.length);
-                file.setTags(newTags);
-            } else {
-                file.setTags(tags);
+                tagSet.addAll(Arrays.asList(tags1));
             }
+            file.setTags(tagSet.toArray(new String[0]));
             fileRepository.save(file);
+            model.addAttribute("success", true);
+
+            return new ResponseEntity<Model>(model, HttpStatus.OK);
+        } else {
+            model.addAttribute("error", "file not exist");
+
+            return new ResponseEntity<>(model, HttpStatus.NOT_FOUND);
         }
     }
 }

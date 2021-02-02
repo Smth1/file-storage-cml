@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
 
-@Document(indexName = "file_index")
+@Document(indexName = "file_index", createIndex = false)
 public class File {
     @Id
     String id;
@@ -19,7 +19,7 @@ public class File {
     String name;
 
     @Field(type = FieldType.Integer, name = "size")
-    int size;
+    Integer size;
 
     @Field(type = Keyword)
     private String[] tags;
