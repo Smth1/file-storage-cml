@@ -2,6 +2,11 @@
 
  Application that allows us to store files in the cloud, categorize them with tags and search through them.
  
+ Technologies:
+ 
+ - Spring Boot
+ - Elasticsearch
+ 
  ## Installation
 
  ```bash
